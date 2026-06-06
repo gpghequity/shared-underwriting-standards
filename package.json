@@ -4,6 +4,7 @@
   "description": "Centralized underwriting standards for REI platform tools",
   "main": "index.js",
   "exports": {
-    ".": "./index.js"
+    ".": "./index.js",
+    "./bible-reader": "./bible-reader.js"
   }
 }
