@@ -1,0 +1,9 @@
+{
+  "name": "shared-underwriting-standards",
+  "version": "1.0.0",
+  "description": "Centralized underwriting standards for REI platform tools",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  }
+}
