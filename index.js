@@ -27,6 +27,7 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     commissionDefaultPercent: 0.03,       // 3% or $4K minimum
     commissionMinimum: 4_000,
     pocketCashFloor: 10_000,              // HARD FLOOR: flag if below this
+    sellingCostsPercent: 0.08,           // 8% of sale (Bible SELLING_COSTS)
 
     // Comps and AVM
     arvPercentile: 0.40,                  // ALWAYS 40th percentile, NEVER midpoint/average
@@ -47,6 +48,7 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     amortizationYears: 30,
     ltv: 0.80,                            // 80% LTV
     dscr: 1.25,                           // Min 1.25x
+    arvMultiplier: 0.70,                 // MAO / cash-as-is factor (Bible §4)
 
     // Expense pads (applies to NOI calculation for rental scenarios)
     expensePads: {
