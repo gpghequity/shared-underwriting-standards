@@ -273,6 +273,15 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     assetClass: 'lending',
     loanAmount: 'ARV based',
     ltv: { max: 0.75 },                   // ≤75% LTV of ARV (residential)
+
+    // Max LTV the lender will fund, per asset type (lending product guideline —
+    // distinct from the valuation capital-stack LTV above). One home for these.
+    ltvByAssetType: {
+      'Single Family': 0.80, '2-4 Unit': 0.80, 'Multi-Family 5+': 0.75,
+      'Mixed-Use': 0.70, 'Commercial': 0.70, 'Self Storage': 0.70, 'MHP': 0.70,
+      'Flip': 0.85, 'Fix & Flip': 0.85
+    },
+    ltvByAssetTypeDefault: 0.75,
     interestRate: 0.12,                   // 12% baseline
     pointsPercent: 0.02,                  // 2% points
     term: '6-12 months',                  // Typically short-term bridge
