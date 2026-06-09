@@ -1,13 +1,18 @@
 /**
  * PLATFORM_UNDERWRITING_STANDARDS
  *
- * Authoritative source for all REI platform underwriting assumptions.
- * Used across: FastCalc, Auto Offer, Deal Analyzer, Baby Analyzer, Net Sheet,
- * Comp Snapshot, Lender Command, Lending Intake, Report Engine, Vendor Directory Scoring
+ * SINGLE SOURCE OF TRUTH for all REI platform underwriting assumptions.
+ * Used across: Baby Analyzer, Lender Command, Auto Offer, Deal Analyzer, Net Sheet,
+ * Comp Snapshot, Lending Intake, Report Engine, Vendor Directory Scoring
+ * (Fast Calc excluded — standalone giveaway with embedded constants)
  *
- * Source: REI_Math_Bible_v3.docx + CLAUDE.md locked deal rules + 14_MATH_BIBLE_VERIFICATION.md
- * Last Verified: 2026-06-01
- * Last Modified: 2026-06-01
+ * Source: REI_Underwriting_Bible_7.0_FINAL
+ * Authority: Stephen Franco
+ * Last Verified: 2026-06-09
+ * Last Modified: 2026-06-09
+ *
+ * ALL TOOLS READ THIS FILE ON EVERY RUN.
+ * New Bible upload = all tools automatically update. No code changes needed.
  */
 
 const PLATFORM_UNDERWRITING_STANDARDS = {
