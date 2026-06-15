@@ -55,11 +55,13 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     dscr: 1.25,                           // Min 1.25x
     arvMultiplier: 0.70,                 // MAO / cash-as-is factor (Bible §4)
 
-    // Expense pads (applies to NOI calculation for rental scenarios)
+    // Maintenance & vacancy management (MVM) pads (applies to NOI calculation for rental scenarios)
+    // Formula: NOI = income - (MVM % of income) - actual hard costs
+    // For all residential (including multifamily), these apply uniformly per Math Bible
     expensePads: {
-      light: 0.00,      // No pad = gross - hard costs only
-      standard: 0.20,   // 20% pad = conservative
-      harsh: 0.33,      // 33% pad = very conservative
+      light: 0.00,      // 0% MVM = gross - hard costs only
+      standard: 0.15,   // 15% MVM = conservative
+      harsh: 0.30,      // 30% MVM = very conservative
       default: 'standard'
     },
 
