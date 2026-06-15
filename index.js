@@ -6,10 +6,10 @@
  * Comp Snapshot, Lending Intake, Report Engine, Vendor Directory Scoring
  * (Fast Calc excluded — standalone giveaway with embedded constants)
  *
- * Source: REI_Underwriting_Bible_7.0_FINAL
+ * Source: PLATFORM_UNDERWRITING_BIBLE_v9 (2026-06-15)
  * Authority: Stephen Franco
- * Last Verified: 2026-06-09
- * Last Modified: 2026-06-09
+ * Last Verified: 2026-06-15
+ * Last Modified: 2026-06-15 (v9: integrated rei-rehab-calc systems + three-tier offer fees)
  *
  * ALL TOOLS READ THIS FILE ON EVERY RUN.
  * New Bible upload = all tools automatically update. No code changes needed.
@@ -105,6 +105,19 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
   },
 
   // ============================================================================
+  // THREE-TIER OFFER FEES (Auto-Offer V2) — Bible v9
+  // ============================================================================
+
+  OFFER_TIERS_V9: {
+    flipper_fee: 10_000,                  // Direct Investor = Retail − $10k
+    fast_cash_fee: 20_000,                // Fastest Cash = Retail − $20k
+    small_deal: 30_000,                   // Threshold below which use % instead of flat fee
+    flipper_pct: 0.05,                    // 5% off retail on deals <$30k
+    fast_cash_pct: 0.10,                  // 10% off retail on deals <$30k
+    description: 'Three-tier offer structure: Retail (list), Direct Investor (−$10k), Fastest Cash (−$20k)'
+  },
+
+  // ============================================================================
   // STORAGE (Mini storage, climate-controlled, outdoor)
   // ============================================================================
 
@@ -117,6 +130,8 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       standard: 1.25,
       stretch: 1.15
     },
+    noiMultiplier: 12.5,                  // 12.5x NOI (≈8% cap) per Bible v9
+    expenseRatio: 0.35,                   // 35% expense floor if gross given
 
     expenseFloor: 0.35,                   // 35% FLOOR — binds upward only
     pocketCashFloor: 10_000,              // $10K Y1 minimum
@@ -263,6 +278,8 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     amortizationYears: 25,                // 25yr standard (same as storage)
     ltv: 0.75,                            // 75% LTV (same as storage)
     dscr: 1.25,
+    noiMultiplier: 12.5,                  // 12.5x NOI (≈8% cap) per Bible v9
+    expenseRatio: 0.60,                   // 60% expense assumption for NOI if gross given
 
     // Critical MHP factors
     padRentStability: 'required',         // 2yr history minimum
@@ -273,6 +290,44 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       regulatoryRisk: 'MAJOR FLAG'        // Rent caps, approval requirements vary by state
     }
   },
+
+  // ============================================================================
+  // RV PARKS (Bible v9)
+  // ============================================================================
+
+  RV_PARK: {
+    assetClass: 'rv_park',
+    capRateRange: { min: 0.075, max: 0.08 }, // 7.5–8% typically
+    mortgageRate: 0.0725,
+    amortizationYears: 25,
+    ltv: 0.75,
+    dscr: 1.25,
+    noiMultiplier: 13,                    // 13x NOI (≈7.5–8% cap) per Bible v9
+    expenseRatio: 0.55,                   // 55% expense assumption (transient guests = higher opex than MHP)
+    description: 'RV parks with transient guest mix'
+  },
+
+  // ============================================================================
+  // IOS — INDUSTRIAL OUTDOOR STORAGE (Bible v9)
+  // ============================================================================
+
+  IOS: {
+    assetClass: 'ios',
+    capRateRange: { min: 0.07, max: 0.07 }, // 7% cap
+    mortgageRate: 0.0725,
+    amortizationYears: 25,
+    ltv: 0.75,
+    dscr: 1.25,
+    noiMultiplier: 14,                    // 14x NOI (≈7% cap) per Bible v9
+    expenseRatio: 0.20,                   // 20% expense ratio (very low opex: perimeter, lighting, security)
+    description: 'Fenced gravel/asphalt yards for equipment storage'
+  },
+
+  // ============================================================================
+  // STORAGE — NOI MULTIPLIER (Bible v9)
+  // ============================================================================
+
+  // Add to existing STORAGE section below...
 
   // ============================================================================
   // LENDING (Private lending, fix-and-flip, fix-and-hold)
@@ -372,6 +427,74 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       'Mortgage Rate',
       'Pocket Cash Calculation',
       'Stress Tests'
+    ]
+  }
+};
+
+  // ============================================================================
+  // REHAB SYSTEMS (from rei-rehab-calc v2.0) — Bible v9
+  // ============================================================================
+
+  REHAB: {
+    // Condition tier cost multipliers (applied to base costs)
+    tiers: {
+      new: 0.00,
+      modern: 0.25,
+      semiModern: 0.50,
+      old: 0.80,
+      missing: 1.00,
+      drywallNeeded: 2.00,
+      studdedOut: 3.00
+    },
+
+    // System-by-system base costs (from rei-rehab-calc)
+    systems: {
+      cosmetic: { baseCost: 15, unit: 'per_sqft', description: 'Paint, flooring, cosmetics' },
+      windows: { baseCost: 350, unit: 'per_window', description: 'Window replacement' },
+      roof: { formula: 'footprint × pitch × $7/sqft', description: 'Roofing' },
+      kitchen: { tiers: { new: 0, modern: 2000, semiModern: 4000, old: 7000, missing: 10000 }, unit: 'per_unit' },
+      fullBath: { tiers: { new: 0, modern: 1500, semiModern: 2500, old: 4000, missing: 6000 }, unit: 'per_bath' },
+      halfBath: { tiers: { new: 0, modern: 800, semiModern: 1500, old: 2500, missing: 4500 }, unit: 'per_bath' },
+      threeQtrBath: { tiers: { new: 0, modern: 1000, semiModern: 2000, old: 3000, missing: 5000 }, unit: 'per_bath' },
+      appliances: { tiers: { new: 0, modern: 400, semiModern: 700, old: 1500, missing: 1800 }, unit: 'per_unit' },
+      exterior: { amounts: [0, 500, 1500, 2500, 5000, 8000, 10000], unit: 'dropdown' },
+      porch: { amounts: [0, 500, 1500, 2500, 5000, 8000, 10000], unit: 'dropdown' },
+      basement: { amounts: [0, 500, 1500, 2500, 5000, 8000, 10000], unit: 'dropdown' },
+      furnace: { amounts: [0, 1000, 2000, 3000, 6000, 10000], unit: 'dropdown' },
+      plumbing: { amounts: [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000], unit: 'dropdown' },
+      electrical: { amounts: [0, 500, 1000, 2000, 4000, 6000, 8000], unit: 'dropdown' },
+      holding: { amounts: [0, 200, 500, 1000, 1500, 3000, 5000], unit: 'per_month', description: 'Carrying costs' }
+    },
+
+    description: 'All rehab pricing from rei-rehab-calc v2.0 (source of truth for rehab costs)'
+  },
+
+  // ============================================================================
+  // VERSION & METADATA
+  // ============================================================================
+
+  META: {
+    version: '9.0',
+    bibleVersion: 'PLATFORM_UNDERWRITING_BIBLE_v9',
+    date_last_updated: '2026-06-15',
+    authority: 'Stephen Franco',
+    integrations: [
+      'rei-rehab-calc (rehab systems)',
+      'rei-auto-offer (three-tier offers)',
+      'Baby Analyzer',
+      'Lender Command',
+      'Deal Analyzer',
+      'Net Sheet',
+      'Comp Snapshot',
+      'Lending Intake',
+      'Report Engine'
+    ],
+    critical_rules: [
+      'ALL TOOLS READ THIS FILE ON EVERY RUN',
+      'Do not hardcode numbers. Read from this Bible.',
+      'Rehab source: rei-rehab-calc. Do not copy into tool code.',
+      'Three-offer tiers: Retail, Direct Investor (−$10k), Fastest Cash (−$20k)',
+      'NOI multipliers: Storage 12.5x, MHP 12.5x, RV 13x, IOS 14x'
     ]
   }
 };
