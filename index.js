@@ -101,6 +101,23 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       formula: 'ARV - commission_on_ARV',
       description: 'List property after repairs complete',
       requiresARV: true
+    },
+
+    // AUTO-OFFER V2 LISTING RULES
+    listingAsIsHaggleFactor: 0.93,         // Market discount for as-is properties (buyer accepts repairs)
+    listingRepairedARVRealization: 0.95,   // Minimal discount for repaired property
+    buyerConcessionPercent: 0.02,          // Typical buyer concessions (2%)
+    closingCostsPercent: 0.08,             // Cash offer: 8% of ARV for closing costs + profit buffer
+    expectedDaysOnMarketRange: { low: 30, high: 90 },  // Typical market exposure time
+
+    // CONDITION-TIER REHAB PSF (Fallback if no research data)
+    // These are only used if Remodeling Magazine benchmark unavailable
+    conditionRehabPSF: {
+      move_in: 5,                          // Move-in ready: $5/sqft
+      light_rehab: 25,                     // Light rehab: $25/sqft
+      medium_rehab: 45,                    // Medium rehab: $45/sqft
+      heavy_rehab: 75,                     // Heavy rehab: $75/sqft
+      studs: 110                           // Studs: $110/sqft (gut rehab)
     }
   },
 
