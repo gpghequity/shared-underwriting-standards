@@ -6,10 +6,10 @@
  * Comp Snapshot, Lending Intake, Report Engine, Vendor Directory Scoring
  * (Fast Calc excluded — standalone giveaway with embedded constants)
  *
- * Source: PLATFORM_UNDERWRITING_BIBLE_v9 (2026-06-15)
- * Authority: Stephen Franco
- * Last Verified: 2026-06-15
- * Last Modified: 2026-06-15 (v9: integrated rei-rehab-calc systems + three-tier offer fees)
+ * Source: REI_PLATFORM_BIBLE_v11_23 (2026-06-16)
+ * Authority: Stephen Franco / GPGH Equities
+ * Last Verified: 2026-06-16
+ * Last Modified: 2026-06-16 (v11.23: complete rehab systems, seller-finance $100k buyer, 8-scenario matrix)
  *
  * ALL TOOLS READ THIS FILE ON EVERY RUN.
  * New Bible upload = all tools automatically update. No code changes needed.
@@ -83,12 +83,22 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     },
 
     termsOffer: {
-      downPaymentPercent: 0.10,           // 10% down
-      interestRate: 0.05,                 // 5% APR
-      balloonYears: 7,                    // Balloon in 7 years
-      amortizationYears: 30,              // Payments calculated over 30yr
-      formula: 'seller_note_principal = (NOI / 1.25 - bank_DS - closing); monthly_payment = principal * K_SELLER(5%, 30yr)',
-      description: 'Seller-financed offer'
+      downPaymentPercent: 0.10,           // 10% down (deprecated, use BUYER_CASH_FIXED for seller finance)
+      interestRate: 0.05,                 // 5% APR (for ad-hoc terms)
+      balloonYears: 7,                    // Balloon in 7 years (deprecated, use SELLER_BALLOON_YEARS for v11.23)
+      amortizationYears: 30,              // Payments calculated over 30yr (deprecated, use SELLER_AMORTIZATION_YEARS)
+      formula: 'seller_note_principal = (NOI / 1.25 - bank_DS - closing); monthly_payment = principal * K_SELLER(5%, 25yr)',
+      description: 'Seller-financed offer (v11.23: $100k buyer cash, 5%, 25yr amort, 15yr balloon)'
+    },
+
+    // ── BIBLE v11.23: Seller-Finance Structure (Section 4.8, S4 scenario) ──
+    sellerFinance: {
+      buyerCashFixed: 100_000,            // Fixed $100k buyer cash minimum (Bible §4.8)
+      interestRate: 0.05,                 // 5.00% seller note rate
+      amortizationYears: 25,              // 25-year amortization
+      balloonYears: 15,                   // 15-year balloon call
+      kSeller: 0.07057,                   // Loan constant for 5%, 25yr
+      description: 'Standard seller-finance structure: $100k buyer cash, seller fills equity gap'
     },
 
     listAsIs: {
@@ -110,14 +120,28 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     closingCostsPercent: 0.08,             // Cash offer: 8% of ARV for closing costs + profit buffer
     expectedDaysOnMarketRange: { low: 30, high: 90 },  // Typical market exposure time
 
-    // CONDITION-TIER REHAB PSF (Fallback if no research data)
-    // These are only used if Remodeling Magazine benchmark unavailable
-    conditionRehabPSF: {
-      move_in: 5,                          // Move-in ready: $5/sqft
-      light_rehab: 25,                     // Light rehab: $25/sqft
-      medium_rehab: 45,                    // Medium rehab: $45/sqft
-      heavy_rehab: 75,                     // Heavy rehab: $75/sqft
-      studs: 110                           // Studs: $110/sqft (gut rehab)
+    // ── BIBLE v11.23: Condition Tiers & Effective Cosmetic $/SF (Section 5.2–5.4) ──
+    // Authority: REI Platform Bible v11.23 (Stephen Franco, 2026-06-16)
+    // Rehab pricing is from line-item system below. These tiers apply condition multipliers.
+    conditionTiers: {
+      new: 0.00,               // Like-new, no work
+      modern: 0.25,            // Minor cosmetic (25% of base cosmetic cost)
+      semiModern: 0.50,        // Moderate updates (50% of base cosmetic cost)
+      old: 0.80,               // Significant work (80% of base cosmetic cost)
+      missing: 1.00,           // Complete replacement (100% of base cosmetic cost)
+      drywallNeeded: 2.00,     // Structural damage, drywall out (200% of base cosmetic cost = $30/SF)
+      studdedOut: 3.00         // Full gut to studs (300% of base cosmetic cost = $45/SF) ← NOT $110/SF
+    },
+
+    // Effective Cosmetic $/SF for verification (Bible Section 5.4)
+    effectiveCosmetic_PSF: {
+      new: 0.00,
+      modern: 3.75,            // $15/SF × 25% = $3.75/SF
+      semiModern: 7.50,        // $15/SF × 50% = $7.50/SF
+      old: 12.00,              // $15/SF × 80% = $12.00/SF
+      missing: 15.00,          // $15/SF × 100% = $15.00/SF
+      drywallNeeded: 30.00,    // $15/SF × 200% = $30.00/SF
+      studdedOut: 45.00        // $15/SF × 300% = $45.00/SF ← NOT $110/SF
     }
   },
 
@@ -449,26 +473,27 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
 };
 
   // ============================================================================
-  // REHAB SYSTEMS (from rei-rehab-calc v2.0) — Bible v9
+  // REHAB SYSTEMS (from Bible v11.23 Section 5) — Authoritative
   // ============================================================================
 
   REHAB: {
-    // Condition tier cost multipliers (applied to base costs)
+    // Condition tier cost multipliers (applied to base costs per Section 5.2)
     tiers: {
-      new: 0.00,
-      modern: 0.25,
-      semiModern: 0.50,
-      old: 0.80,
-      missing: 1.00,
-      drywallNeeded: 2.00,
-      studdedOut: 3.00
+      new: 0.00,               // Like-new, no work
+      modern: 0.25,            // Minor cosmetic
+      semiModern: 0.50,        // Moderate updates
+      old: 0.80,               // Significant work
+      missing: 1.00,           // Complete replacement
+      drywallNeeded: 2.00,     // Structural damage, drywall out
+      studdedOut: 3.00         // Full gut to studs
     },
 
-    // System-by-system base costs (from rei-rehab-calc)
+    // System-by-system base costs (Bible Section 5.3–5.4)
     systems: {
       cosmetic: { baseCost: 15, unit: 'per_sqft', description: 'Paint, flooring, cosmetics' },
       windows: { baseCost: 350, unit: 'per_window', description: 'Window replacement' },
-      roof: { formula: 'footprint × pitch × $7/sqft', description: 'Roofing' },
+      siding: { baseCost: 12, unit: 'per_sqft', description: 'Siding replacement' },
+      roof: { baseCost: 7, unit: 'per_sqft', description: 'Roofing' },
       kitchen: { tiers: { new: 0, modern: 2000, semiModern: 4000, old: 7000, missing: 10000 }, unit: 'per_unit' },
       fullBath: { tiers: { new: 0, modern: 1500, semiModern: 2500, old: 4000, missing: 6000 }, unit: 'per_bath' },
       halfBath: { tiers: { new: 0, modern: 800, semiModern: 1500, old: 2500, missing: 4500 }, unit: 'per_bath' },
@@ -477,13 +502,14 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       exterior: { amounts: [0, 500, 1500, 2500, 5000, 8000, 10000], unit: 'dropdown' },
       porch: { amounts: [0, 500, 1500, 2500, 5000, 8000, 10000], unit: 'dropdown' },
       basement: { amounts: [0, 500, 1500, 2500, 5000, 8000, 10000], unit: 'dropdown' },
+      structure: { amounts: [0, 500, 1500, 2500, 5000, 8000, 10000], unit: 'dropdown' },
       furnace: { amounts: [0, 1000, 2000, 3000, 6000, 10000], unit: 'dropdown' },
       plumbing: { amounts: [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000], unit: 'dropdown' },
       electrical: { amounts: [0, 500, 1000, 2000, 4000, 6000, 8000], unit: 'dropdown' },
       holding: { amounts: [0, 200, 500, 1000, 1500, 3000, 5000], unit: 'per_month', description: 'Carrying costs' }
     },
 
-    description: 'All rehab pricing from rei-rehab-calc v2.0 (source of truth for rehab costs)'
+    description: 'All rehab pricing from REI Platform Bible v11.23 Section 5 (source of truth for rehab costs)'
   },
 
   // ============================================================================
@@ -491,26 +517,36 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
   // ============================================================================
 
   META: {
-    version: '9.0',
-    bibleVersion: 'PLATFORM_UNDERWRITING_BIBLE_v9',
-    date_last_updated: '2026-06-15',
-    authority: 'Stephen Franco',
+    version: '11.23',
+    bibleVersion: 'REI_PLATFORM_BIBLE_v11_23',
+    bibleSourceFile: 'REI_PLATFORM_BIBLE_v11_23.{md,json,yaml}',
+    date_last_updated: '2026-06-16',
+    authority: 'Stephen Franco / GPGH Equities / Gorilla Real Estate',
     integrations: [
       'rei-rehab-calc (rehab systems)',
-      'rei-auto-offer (three-tier offers)',
+      'rei-auto-offer (four-tier offers + seller finance)',
       'Baby Analyzer',
       'Lender Command',
       'Deal Analyzer',
       'Net Sheet',
       'Comp Snapshot',
       'Lending Intake',
-      'Report Engine'
+      'Report Engine',
+      'rei-risk-intelligence',
+      'rei-inspection',
+      'rei-appraisal',
+      'all 35+ REI platform services'
     ],
     critical_rules: [
       'ALL TOOLS READ THIS FILE ON EVERY RUN',
       'Do not hardcode numbers. Read from this Bible.',
-      'Rehab source: rei-rehab-calc. Do not copy into tool code.',
-      'Three-offer tiers: Retail, Direct Investor (−$10k), Fastest Cash (−$20k)',
+      'Rehab: $15/SF cosmetic base × condition multiplier (not $110/SF studs)',
+      'Seller finance: $100k buyer cash, 5%, 25yr amort, 15yr balloon',
+      'Four offer tiers: List, Direct (−$10k), Fast Cash (−$20k), Cash MAO (70%)',
+      'Residential pads: 0%, 15%, 30% (not 20%, 33%)',
+      'Residential DSCR: 1.25 only (not 1.15)',
+      'Commercial scenarios: exactly 8 (not 10)',
+      'Retired: B1, B2, B3, seller-note scenarios, kicker as scenario row',
       'NOI multipliers: Storage 12.5x, MHP 12.5x, RV 13x, IOS 14x'
     ]
   }
