@@ -83,12 +83,12 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     },
 
     termsOffer: {
-      downPaymentPercent: 0.10,           // 10% down (deprecated, use BUYER_CASH_FIXED for seller finance)
-      interestRate: 0.05,                 // 5% APR (for ad-hoc terms)
-      balloonYears: 7,                    // Balloon in 7 years (deprecated, use SELLER_BALLOON_YEARS for v11.23)
-      amortizationYears: 30,              // Payments calculated over 30yr (deprecated, use SELLER_AMORTIZATION_YEARS)
+      downPaymentPercent: 0.10,           // Legacy field for backward compat (app may still use this for old logic)
+      interestRate: 0.05,                 // 5.00% seller note rate (Bible §4.8, S4)
+      balloonYears: 15,                   // UPDATED: 15-year balloon (was 7, now v11.23 §4.8)
+      amortizationYears: 25,              // UPDATED: 25-year amortization (was 30, now v11.23 §4.8)
       formula: 'seller_note_principal = (NOI / 1.25 - bank_DS - closing); monthly_payment = principal * K_SELLER(5%, 25yr)',
-      description: 'Seller-financed offer (v11.23: $100k buyer cash, 5%, 25yr amort, 15yr balloon)'
+      description: 'Seller-financed offer (Bible v11.23 §4.8: $100k buyer cash, 5%, 25yr amort, 15yr balloon)'
     },
 
     // ── BIBLE v11.23: Seller-Finance Structure (Section 4.8, S4 scenario) ──
