@@ -469,8 +469,7 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       'Pocket Cash Calculation',
       'Stress Tests'
     ]
-  }
-};
+  },
 
   // ============================================================================
   // REHAB SYSTEMS (from Bible v11.23 Section 5) — Authoritative
