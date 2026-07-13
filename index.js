@@ -6,10 +6,12 @@
  * Comp Snapshot, Lending Intake, Report Engine, Vendor Directory Scoring
  * (Fast Calc excluded — standalone giveaway with embedded constants)
  *
- * Source: REI_PLATFORM_BIBLE_v11_23 (2026-06-16)
+ * Source: REI_PLATFORM_BIBLE_v11_25 (2026-07-13)
  * Authority: Stephen Franco / GPGH Equities
- * Last Verified: 2026-06-16
- * Last Modified: 2026-06-16 (v11.23: complete rehab systems, seller-finance $100k buyer, 8-scenario matrix)
+ * Last Verified: 2026-07-13
+ * Last Modified: 2026-07-13 (v11.25: added CLOSING_COSTS section — commercial appraisal $4k,
+ *   Phase I environmental $3.5k, 1% points, 1% lender fees, 2% buyer closing)
+ * Prior: 2026-06-16 (v11.23: complete rehab systems, seller-finance $100k buyer, 8-scenario matrix)
  *
  * ALL TOOLS READ THIS FILE ON EVERY RUN.
  * New Bible upload = all tools automatically update. No code changes needed.
@@ -41,6 +43,20 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     // Income verification
     incomeVerification: 'current_verified_only', // Never use pro-forma
     daysOfIncomeHistory: 12,              // T-12 minimum for rentals
+  },
+
+  // ============================================================================
+  // CLOSING COSTS (commercial-grade: storage / commercial / MHP)
+  // Added Bible v11.25 (2026-07-13, S. Franco). Feed the "cash-to-close"
+  // estimate ONLY — never the offer or valuation. Residential/rental deals
+  // carry no bank fees (bankFees = 0).
+  // ============================================================================
+  CLOSING_COSTS: {
+    appraisalFee: 4_000,          // Commercial appraisal (typical $3,000–5,000)
+    environmentalFee: 3_500,      // Phase I ESA (typical $2,500–5,000)
+    bankPointsPct: 0.01,          // 1% loan origination points
+    lenderFeesPct: 0.01,          // 1% lender / underwriting fees
+    buyerClosingCostsPct: 0.02,   // 2% buyer-side (title, legal, misc) on offer
   },
 
   // ============================================================================
