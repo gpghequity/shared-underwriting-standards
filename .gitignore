@@ -1,1 +1,9 @@
 node_modules/
+
+# Generated at deploy time by build-bible-json.js from index.js.
+# NEVER commit this: a checked-in bible.json is a second copy of the Bible and
+# could drift from index.js, which is the exact problem this repo exists to prevent.
+# index.js is the one source. The JSON is only ever a projection of it.
+public/
+
+.vercel
