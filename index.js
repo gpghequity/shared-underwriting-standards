@@ -540,6 +540,31 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     pointsPercent: 0.02,                  // 2% points
     term: '6-12 months',                  // Typically short-term bridge
 
+    // ── TRANSACTIONAL (24-90hr double-close) ──────────────────────────────
+    // A different product from DSCR/term lending: underwrites CLOSING risk, not
+    // the borrower's credit or long-term value. Homed 2026-07-16 from
+    // rei-transactional-lending/services/scoring.js, where these were hardcoded.
+    transactional: {
+      // Gross spread (B->C price minus A->B price) below which the deal is
+      // flagged as a thin margin for transactional funding. Was `< 5000`
+      // hardcoded in detectRedFlags().
+      minGrossSpread: 5_000,
+
+      // When a borrower does not supply estimated closing costs, they are
+      // estimated as A->B price x this pct. This MUST be
+      // CLOSING_COSTS.buyerClosingCostsPct (0.02).
+      //
+      // BUG THIS REPLACES (found 2026-07-16): scoring.js read
+      // `BIBLE.GLOBAL.buyerClosingCostsPct || 0.04`. There is no
+      // buyerClosingCostsPct on GLOBAL — it lives on CLOSING_COSTS — so the read
+      // was undefined and it silently used the 0.04 fallback. That is 4% vs the
+      // Bible's 2%: exactly DOUBLE. On a $200k A->B it charged $8,000 instead of
+      // $4,000, understating net spread by $4,000 on every deal where closing
+      // costs weren't provided — and net spread drives both the
+      // "negative net spread" red flag and the funding recommendation.
+      closingCostEstimatePctSource: 'CLOSING_COSTS.buyerClosingCostsPct'
+    },
+
     // Required docs
     requiredDocs: [
       'personal_guarantee',
