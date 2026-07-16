@@ -317,6 +317,14 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       specialPurpose: { capRate: null, vacancyFloor: null, comments: 'Case-by-case' }
     },
 
+    // Cash-on-cash return targets used to solve the two return-target offers
+    // (added 2026-07-16 as the Bible home for FastCalc's previously orphaned
+    // DEFAULT_RETURN_TARGET_LOW/HIGH — values unchanged, now canonical)
+    returnTargets: {
+      low: 0.10,                          // 10% CoC — the "will do" offer
+      high: 0.18                          // 18% CoC — the "want" offer
+    },
+
     // Mixed-use blending formula
     mixedUseFormula: 'blended_cap = (capRate_A * sqft_A + capRate_B * sqft_B) / total_sqft',
 
