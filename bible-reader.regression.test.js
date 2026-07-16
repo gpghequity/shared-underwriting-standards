@@ -50,10 +50,15 @@ eq('cosmetic base $/SF is Bible 15', B.REHAB.systems.cosmetic.baseCost, 15);
 eq('studdedOut effective $/SF is 45 (NOT 110/130)', B.REHAB.effectiveCosmetic_PSF.studdedOut, 45);
 eq('no national_benchmark 130 table', B.REHAB.national_benchmark, undefined);
 
-// 5) Gap fields must be null (surfaced, not fabricated)
-eq('RATE_REFI null (not in Bible)', B.GLOBAL.RATE_REFI, null);
-eq('NOI_GROWTH_CONSERVATIVE null', B.GLOBAL.NOI_GROWTH_CONSERVATIVE, null);
-eq('HOLDING_MONTHS null', B.GLOBAL.HOLDING_MONTHS, null);
+// 5) Formerly-orphan fields now read their canonical Bible homes (added 2026-07-16)
+eq('RATE_REFI reads Bible REFI', B.GLOBAL.RATE_REFI, STANDARDS.REFI.mortgageRate);
+eq('AMORT_REFI reads Bible REFI', B.GLOBAL.AMORT_REFI, STANDARDS.REFI.amortizationYears);
+eq('NOI_GROWTH_CONSERVATIVE reads Bible GROWTH', B.GLOBAL.NOI_GROWTH_CONSERVATIVE, STANDARDS.GROWTH.noiConservative);
+eq('NOI_GROWTH_STRETCH reads Bible GROWTH', B.GLOBAL.NOI_GROWTH_STRETCH, STANDARDS.GROWTH.noiStretch);
+eq('EXPENSE_GROWTH reads Bible GROWTH', B.GLOBAL.EXPENSE_GROWTH, STANDARDS.GROWTH.expenseAnnual);
+eq('HOLDING_MONTHS reads Bible GLOBAL', B.GLOBAL.HOLDING_MONTHS, STANDARDS.GLOBAL.holdingMonthsDefault);
+eq('RATE_OWNER reads Bible RESIDENTIAL', B.GLOBAL.RATE_OWNER, STANDARDS.RESIDENTIAL.ownerFinanceRate);
+eq('no orphan fields remain', require('./bible-reader.js').NOT_IN_CANONICAL_BIBLE.length, 0);
 
 console.log(`\nbible-reader regression: ${pass} passed, ${fail} failed`);
 if (fail) { console.log(problems.join('\n')); process.exit(1); }

@@ -25,11 +25,9 @@ const STANDARDS = require('./index.js'); // THE Bible (single source of truth)
 // and are reported to Steve (QUESTIONS_FOR_STEVE) to either add to the Bible or
 // confirm retired. Any caller relying on one gets `undefined`, surfacing the bug
 // instead of silently using a non-canonical number.
-const NOT_IN_CANONICAL_BIBLE = [
-  'RATE_REFI', 'AMORT_REFI',
-  'NOI_GROWTH_CONSERVATIVE', 'NOI_GROWTH_STRETCH', 'EXPENSE_GROWTH',
-  'HOLDING_MONTHS'
-];
+// All legacy constants now have a canonical home in index.js (added 2026-07-16:
+// REFI, GROWTH, GLOBAL.holdingMonthsDefault, RESIDENTIAL.ownerFinanceRate).
+const NOT_IN_CANONICAL_BIBLE = [];
 
 /**
  * readBibleFile()
@@ -81,13 +79,13 @@ function parseBible() {
       AMORT_BANK_COMMERCIAL: C.amortizationYears,
 
       // Owner / seller financing
-      RATE_OWNER: S.scenarios.groupA_v2_1_25.equityRate, // canonical IO equity rate (0.08)
+      RATE_OWNER: R.ownerFinanceRate,        // 0.08 (Bible home added 2026-07-16)
       RATE_SELLER: R.sellerFinance.interestRate,
       AMORT_SELLER: R.sellerFinance.amortizationYears,
 
-      // NOT in canonical Bible — surfaced as null, logged for Steve
-      RATE_REFI: null,
-      AMORT_REFI: null,
+      // Refinance takeout (Bible home added 2026-07-16)
+      RATE_REFI: STANDARDS.REFI.mortgageRate,
+      AMORT_REFI: STANDARDS.REFI.amortizationYears,
 
       // LTV by asset class
       LTV_STORAGE: S.ltv,
@@ -113,7 +111,7 @@ function parseBible() {
       // Closing / holding / selling
       CLOSING_RESI: G.closingCostsFlatAmount, // 2000  (was wrongly 3000)
       HOLDING_COST_PCT_MONTHLY: G.holdingCostPercentMonthly, // 0.01 (Bible models holding as %/mo, not flat)
-      HOLDING_MONTHS: null, // NOT in canonical Bible — logged for Steve
+      HOLDING_MONTHS: G.holdingMonthsDefault, // 6 (Bible home added 2026-07-16)
       SELLING_COSTS_PCT: G.sellingCostsPercent,
 
       // Comps / commission
@@ -121,10 +119,10 @@ function parseBible() {
       COMMISSION_PCT: G.commissionDefaultPercent,
       COMMISSION_MIN: G.commissionMinimum,
 
-      // Growth assumptions — NOT in canonical Bible — logged for Steve
-      NOI_GROWTH_CONSERVATIVE: null,
-      NOI_GROWTH_STRETCH: null,
-      EXPENSE_GROWTH: null,
+      // Growth assumptions (Bible home added 2026-07-16)
+      NOI_GROWTH_CONSERVATIVE: STANDARDS.GROWTH.noiConservative,
+      NOI_GROWTH_STRETCH: STANDARDS.GROWTH.noiStretch,
+      EXPENSE_GROWTH: STANDARDS.GROWTH.expenseAnnual,
 
       // Buyer-side closing (commercial-grade)
       buyerClosingCostsPct: CC.buyerClosingCostsPct, // 0.02 (was wrongly 0.04)

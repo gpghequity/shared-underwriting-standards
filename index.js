@@ -43,6 +43,9 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     // Income verification
     incomeVerification: 'current_verified_only', // Never use pro-forma
     daysOfIncomeHistory: 12,              // T-12 minimum for rentals
+
+    // Carry / holding period default (months) — flip & bridge carry
+    holdingMonthsDefault: 6,              // Default flip/bridge holding period in months
   },
 
   // ============================================================================
@@ -89,6 +92,7 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     },
 
     // Hard mode (internal only — owner financing)
+    ownerFinanceRate: 0.08,               // 8% owner-financing note rate (internal hard-mode)
     hardModeFormula: '(NOI / 1.25 - rehab - closing) / (0.8 * K + rate)',
 
     // Offer types
@@ -528,14 +532,33 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
   },
 
   // ============================================================================
+  // REFINANCE (takeout / cash-out assumptions)
+  // Restored to the Bible 2026-07-16 (were orphaned in bible-reader, no home here).
+  // ============================================================================
+  REFI: {
+    mortgageRate: 0.0725,                 // 7.25% refi takeout rate
+    amortizationYears: 15,                // 15yr refi amortization
+  },
+
+  // ============================================================================
+  // GROWTH ASSUMPTIONS (multi-year projections)
+  // Restored to the Bible 2026-07-16 (were orphaned in bible-reader, no home here).
+  // ============================================================================
+  GROWTH: {
+    noiConservative: 0.03,                // 3% annual NOI growth (conservative)
+    noiStretch: 0.05,                     // 5% annual NOI growth (stretch)
+    expenseAnnual: 0.0235,                // 2.35% annual expense growth
+  },
+
+  // ============================================================================
   // VERSION & METADATA
   // ============================================================================
 
   META: {
-    version: '11.23',
-    bibleVersion: 'REI_PLATFORM_BIBLE_v11_23',
-    bibleSourceFile: 'REI_PLATFORM_BIBLE_v11_23.{md,json,yaml}',
-    date_last_updated: '2026-06-16',
+    version: '11.25',
+    bibleVersion: 'REI_PLATFORM_BIBLE_v11_25',
+    bibleSourceFile: 'REI_PLATFORM_BIBLE_v11_25.{md,json,yaml}',
+    date_last_updated: '2026-07-13',
     authority: 'Stephen Franco / GPGH Equities / Gorilla Real Estate',
     integrations: [
       'rei-rehab-calc (rehab systems)',
@@ -560,8 +583,8 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       'Four offer tiers: List, Direct (−$10k), Fast Cash (−$20k), Cash MAO (70%)',
       'Residential pads: 0%, 15%, 30% (not 20%, 33%)',
       'Residential DSCR: 1.25 only (not 1.15)',
-      'Commercial scenarios: exactly 8 (not 10)',
-      'Retired: B1, B2, B3, seller-note scenarios, kicker as scenario row',
+      'Storage/commercial scenario matrix: exactly 10 (6 conventional groupA + 2 seller-note groupB + 2 seller-kicker groupC)',
+      'Retired: B1, B2, B3 legacy rows (superseded by the groupA/B/C 10-scenario matrix)',
       'NOI multipliers: Storage 12.5x, MHP 12.5x, RV 13x, IOS 14x'
     ]
   }
