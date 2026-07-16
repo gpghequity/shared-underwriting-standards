@@ -198,6 +198,22 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     pocketCashFloor: 10_000,              // $10K Y1 minimum
     stabilizedNOIFloor: 40_000,           // KILL if under $40K
 
+    // ── Homed 2026-07-16 from rei-fast-calc/src/math/storage.js ──
+    // Cash-on-cash targets used to solve the two return-target offers. Previously
+    // hardcoded as `target: 0.10` / `target: 0.18` inside calcStorage().
+    returnTargets: {
+      low: 0.10,                          // 10% CoC
+      high: 0.18                          // 18% CoC
+    },
+
+    // Seller piece riding behind the bank loan on a storage seller-finance offer:
+    // sfCombinedFactor = LTV × K_bank + (1 − LTV) × K_seller.
+    // Previously hardcoded as SF_SELLER_RATE / SF_SELLER_AMORT in storage.js.
+    sellerFinance: {
+      rate: 0.05,                         // 5%
+      amortYears: 25                      // 25yr amortization
+    },
+
     // 10-scenario matrix (6 conventional + 4 seller finance)
     scenarios: {
       groupA_v1_1_25: {
@@ -303,18 +319,65 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       stretch: 1.15
     },
 
-    // Subclass-specific cap rates and vacancy floors
+    // Subclass-specific cap rates, cap BANDS, expense floors and vacancy floors.
+    //
+    // capLow/capHigh/expenseFloor homed here 2026-07-16 from rei-fast-calc's
+    // SUBCLASS_DEFAULTS (src/math/commercial.js), which kept its own private table.
+    // The band drives the "implied cap is outside the typical range" warnings;
+    // expenseFloor binds the underwritten expense ratio upward. Values unchanged
+    // from what FastCalc already used.
+    //
+    // capRate (single point) is retained unchanged — existing readers depend on it.
+    // Where a subclass has both, capRate is the point estimate and capLow/capHigh
+    // is the acceptable band around it.
+    //
+    // vacancyFloor is the BIBLE's value and wins over FastCalc's differing figure
+    // (Steve 2026-07-16: "Bible wins"). FastCalc's math never read vacancyFloor,
+    // so nothing changes numerically. See LOG note for the two capRate/band
+    // disagreements flagged to Steve (officeMedical, restaurant).
     subclasses: {
-      retailStrip: { capRate: 0.08, vacancyFloor: 0.10, comments: 'Single-tenant or multi-tenant' },
-      singleTenant: { capRate: 0.07, vacancyFloor: 0.05, comments: 'Credit tenant preferred' },
-      officeGeneral: { capRate: 0.085, vacancyFloor: 0.12, comments: 'Class A/B/C varies' },
-      officeMedical: { capRate: 0.085, vacancyFloor: 0.08, comments: 'Typically longer leases' },
-      industrialFlex: { capRate: 0.075, vacancyFloor: 0.08, comments: '3PL, last-mile' },
-      warehouse: { capRate: 0.065, vacancyFloor: 0.05, comments: 'Modern specs premium' },
-      mixedUse: { capRate: null, vacancyFloor: 0.10, comments: 'Blended by tenant mix' },
-      restaurant: { capRate: 0.10, vacancyFloor: 0.00, comments: 'Triple-net or proprietor' },
-      carwash: { capRate: 0.095, vacancyFloor: 0.00, comments: 'High-margin, service' },
-      specialPurpose: { capRate: null, vacancyFloor: null, comments: 'Case-by-case' }
+      retailStrip:    { capRate: 0.08,  capLow: 0.065, capHigh: 0.085, expenseFloor: 0.30, vacancyFloor: 0.10, comments: 'Single-tenant or multi-tenant. Watch top-tenant concentration.' },
+      singleTenant:   { capRate: 0.07,  capLow: 0.055, capHigh: 0.075, expenseFloor: 0.10, vacancyFloor: 0.05, comments: 'Credit tenant preferred. Cap is a function of tenant credit + lease term.' },
+      officeGeneral:  { capRate: 0.085, capLow: 0.075, capHigh: 0.105, expenseFloor: 0.40, vacancyFloor: 0.12, comments: 'Class A/B/C varies. Office vacancy elevated post-2020; underwrite 12-18% min.' },
+      officeMedical:  { capRate: 0.085, capLow: 0.065, capHigh: 0.080, expenseFloor: 0.32, vacancyFloor: 0.08, comments: 'Longer leases. Heavy buildout on renewal ($50-150/SF TI common).' },
+      industrialFlex: { capRate: 0.075, capLow: 0.055, capHigh: 0.075, expenseFloor: 0.15, vacancyFloor: 0.08, comments: '3PL, last-mile. Strong fundamentals most metros.' },
+      warehouse:      { capRate: 0.065, capLow: 0.050, capHigh: 0.070, expenseFloor: 0.10, vacancyFloor: 0.05, comments: 'Modern specs premium. Cap rates compressed since 2020.' },
+      mixedUse:       { capRate: null,  capLow: 0.065, capHigh: 0.090, expenseFloor: 0.35, vacancyFloor: 0.10, comments: 'Blended by tenant mix — see rei-mixed-use for per-asset blend valuation.' },
+      restaurant:     { capRate: 0.10,  capLow: 0.055, capHigh: 0.080, expenseFloor: 0.10, vacancyFloor: 0.00, comments: 'Triple-net or proprietor. QSR/national = tight cap; independent = wider.' },
+      carwash:        { capRate: 0.095, capLow: 0.075, capHigh: 0.110, expenseFloor: 0.35, vacancyFloor: 0.00, comments: 'High-margin, service. Equipment-heavy — high capex reserve.' },
+      specialPurpose: { capRate: null,  capLow: 0.070, capHigh: 0.110, expenseFloor: 0.25, vacancyFloor: null, comments: 'Case-by-case. Re-tenanting risk; discount cap for time-to-fill.' },
+      other:          { capRate: null,  capLow: 0.060, capHigh: 0.100, expenseFloor: 0.25, vacancyFloor: 0.05, comments: 'Generic commercial defaults — override based on local comps.' }
+    },
+
+    // Maps the snake_case subclass keys used by app UIs to the Bible's camelCase
+    // keys, so an app never has to keep its own copy of the subclass table.
+    subclassAliases: {
+      retail_strip: 'retailStrip',
+      retail_single: 'singleTenant',
+      office_general: 'officeGeneral',
+      office_medical: 'officeMedical',
+      industrial_flex: 'industrialFlex',
+      industrial_warehouse: 'warehouse',
+      mixed_use: 'mixedUse',
+      restaurant: 'restaurant',
+      self_serve_carwash: 'carwash',
+      special_purpose: 'specialPurpose',
+      other: 'other'
+    },
+
+    // Human labels for the subclass pickers — homed from FastCalc's SUBCLASS_LABELS.
+    subclassLabels: {
+      retailStrip: 'Retail — strip / multi-tenant',
+      singleTenant: 'Retail — single-tenant NNN',
+      officeGeneral: 'Office — general / multi-tenant',
+      officeMedical: 'Office — medical (MOB)',
+      industrialFlex: 'Industrial — flex / light',
+      warehouse: 'Industrial — warehouse / distribution',
+      mixedUse: 'Mixed-use (retail + office/residential)',
+      restaurant: 'Restaurant / QSR',
+      carwash: 'Self-serve car wash',
+      specialPurpose: 'Special purpose (bank, daycare, vet)',
+      other: 'Other / generic commercial'
     },
 
     // Cash-on-cash return targets used to solve the two return-target offers
@@ -357,6 +420,56 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     utilityRedFlags: {
       ownerPays: 'MAJOR FLAG',            // Owner utility responsibility is high-risk
       regulatoryRisk: 'MAJOR FLAG'        // Rent caps, approval requirements vary by state
+    },
+
+    // ── Homed 2026-07-16 from rei-fast-calc/src/math/mhp.js + config/defaults.js ──
+    // Steve: "Whatever any app needs that's not in the Bible gets added to the Bible."
+    // Every value below was previously a hardcoded literal inside FastCalc with no
+    // Bible home, so it could never follow a Bible change. Values are UNCHANGED from
+    // what the app already used — this is a move, not a re-rate.
+
+    // MVM (Market Value Method) pads applied to gross scheduled income, per card.
+    // NOTE: these are MHP's OWN pads (0 / 20% / 30%) and are deliberately NOT the
+    // residential expensePads (0 / 15% / 30%). Do not merge the two.
+    mvmPads: {
+      standard: 0.00,                     // Card 1 — "Bank Only — 0% MVM"
+      mvm20: 0.20,                        // Card 2 — "MVM 20% — vacancy/management/maintenance"
+      mvm30: 0.30                         // Card 3 — "MVM 30% — conservative"
+    },
+
+    // POH (park-owned home) risk thresholds — drive flags, not math.
+    pohHeavyThreshold: 0.25,              // (occPoh+vacPoh)/totalLots above this -> lender haircut flag
+    pohVacancyThreshold: 0.20,            // vacantPoh/totalPoh above this -> high POH vacancy flag
+    vacantLotThreshold: 0.15,             // vacantLots/totalLots above this -> significant inventory flag
+
+    // POH carries extra operating burden vs a TOH baseline. Applied as
+    // opExBase × pohOpexPad × pohShare, where pohShare = totalPoh/totalOccupied.
+    pohOpexPad: 0.30,
+
+    // Operating assumptions (defaults; user overrides per deal)
+    managementPct: 0.07,                  // management fee as % of EGI
+    tohVacancyPct: 0.05,                  // vacancy cushion on tenant-owned-home lot rent
+    pohVacancyPct: 0.10,                  // vacancy cushion on park-owned-home rent
+    collectionLossPct: 0.02,              // collection loss on income after vacancy
+    seniorTerm: 10,                       // senior loan term (years) — amort is amortizationYears
+
+    // Seller financing that sits on top of the senior loan for MHP.
+    sellerFi: {
+      rate: 0.05,                         // 5%
+      amortYears: 25,                     // 25yr amortization
+      pct: 1.00                           // share of remaining equity carried by seller
+    },
+
+    // Utility responsibility matrix. Burden = costAnnual × (1 − recoveryPct) for
+    // park-paid/submeter; tenant-direct costs the park nothing.
+    utilityKeys: ['water', 'sewer', 'trash', 'electric', 'gas'],
+    parkBurdenModes: ['park-paid', 'submeter'],
+    utilityDefaults: {
+      water:    { mode: 'park-paid',     costAnnual: null, recoveryPct: null },
+      sewer:    { mode: 'park-paid',     costAnnual: null, recoveryPct: null },
+      trash:    { mode: 'park-paid',     costAnnual: null, recoveryPct: null },
+      electric: { mode: 'tenant-direct', costAnnual: null, recoveryPct: null },
+      gas:      { mode: 'tenant-direct', costAnnual: null, recoveryPct: null }
     }
   },
 
