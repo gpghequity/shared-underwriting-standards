@@ -74,6 +74,14 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     dscr: 1.25,                           // Min 1.25x
     arvMultiplier: 0.70,                 // MAO / cash-as-is factor (Bible §4)
 
+    // Cash-on-cash targets used to solve the two return-target offers on the
+    // rental tab. Homed 2026-07-16 from rei-fast-calc/src/math/rental.js, where
+    // they were hardcoded as `target: 0.10` / `target: 0.18` inside computeCard().
+    returnTargets: {
+      low: 0.10,                          // 10% CoC
+      high: 0.18                          // 18% CoC
+    },
+
     // Maintenance & vacancy management (MVM) pads (applies to NOI calculation for rental scenarios)
     // Formula: NOI = income - (MVM % of income) - actual hard costs
     // For all residential (including multifamily), these apply uniformly per Math Bible

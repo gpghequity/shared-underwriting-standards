@@ -5,6 +5,7 @@
   "main": "index.js",
   "exports": {
     ".": "./index.js",
-    "./bible-reader": "./bible-reader.js"
+    "./bible-reader": "./bible-reader.js",
+    "./bible-client": "./bible-client.js"
   }
 }
