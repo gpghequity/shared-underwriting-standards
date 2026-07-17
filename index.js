@@ -46,6 +46,14 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
 
     // Carry / holding period default (months) — flip & bridge carry
     holdingMonthsDefault: 6,              // Default flip/bridge holding period in months
+
+    // ── Homed 2026-07-16 from the analyzer fleet ─────────────────────────────
+    // These were referenced by app code as C.HOLDING_PER_MONTH etc. but defined
+    // NOWHERE — the reads returned undefined and the analyzers rendered literal
+    // NaN to operators ("Holding (undefined months x $undefined)"). Values taken
+    // from each app's dead config/defaults.json, which is where they had rotted.
+    holdingCostPerMonth: 350,             // $/month carry (was C.HOLDING_PER_MONTH -> NaN)
+    arvMinComps: 3,                       // minimum comps before an ARV is trusted
   },
 
   // ============================================================================
@@ -60,6 +68,18 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     bankPointsPct: 0.01,          // 1% loan origination points
     lenderFeesPct: 0.01,          // 1% lender / underwriting fees
     buyerClosingCostsPct: 0.02,   // 2% buyer-side (title, legal, misc) on offer
+
+    // ── Homed 2026-07-16 from the analyzer fleet's constants.js ──────────────
+    // NOTE FOR STEVE — each app disagrees with ITSELF on these three. The value
+    // below is the one the LIVE code uses (src/math/constants.js). The app's dead
+    // config/defaults.json carries a different number for the same key. Both are
+    // recorded so you can rule; the live value is what ships today.
+    surveyFee: 800,               // live constants.js:47 = 800   (dead defaults.json:64 = 2500)
+    legalFee: 3_000,              // live constants.js:48 = 3000  (dead defaults.json:60 = 2500)
+    insuranceSetupFee: 400,       // live constants.js:50 = 400   (dead defaults.json:65 = 5000)
+    inspectionFee: 400,           // rei-net-sheet netSheet.js:183
+    prepaidInterestPct: 0.005,    // rei-net-sheet netSheet.js:185
+    escrowSetupMonths: 2,         // rei-net-sheet netSheet.js:186
   },
 
   // ============================================================================
@@ -221,6 +241,22 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       rate: 0.05,                         // 5%
       amortYears: 25                      // 25yr amortization
     },
+
+    // ── Homed 2026-07-16 from the analyzer fleet ─────────────────────────────
+    // The kicker projection read C.PCT_DEFAULT / C.CAP_DEFAULT, which were
+    // defined NOWHERE — every kicker payment rendered as NaN in the live UI, and
+    // the one test covering it asserted only `length === 5`, so it passed green
+    // while all five values were NaN. pct duplicates the existing
+    // scenarios.groupC_sellerKicker_*.kickerPercent (0.20) — kept as a readable
+    // key because that is how the app needs to consume it.
+    sellerKicker: {
+      pctDefault: 0.20,                   // 20% of NOI delta above baseline
+      capCumulative: 50_000,              // lifetime cap on kicker payments (was C.CAP_DEFAULT -> NaN)
+      windowYears: 5                      // years the kicker runs
+    },
+
+    pitiReserveMonths: 3,                 // months of PITI held in reserve
+    workingCapitalPct: 0.25,              // working-capital reserve (= groupA equityPercent)
 
     // 10-scenario matrix (6 conventional + 4 seller finance)
     scenarios: {
@@ -394,6 +430,40 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     returnTargets: {
       low: 0.10,                          // 10% CoC — the "will do" offer
       high: 0.18                          // 18% CoC — the "want" offer
+    },
+
+    // ── Homed 2026-07-16 from the analyzer fleet's src/math/commercial.js ────
+    // That file declared "own constants… drift is acceptable" and diverged from
+    // this Bible on rate/amort (0.07/30 vs 0.0725/25) — an 8.64% systematic
+    // OVERPAY on every commercial deal. The values below are the ORPHANS from
+    // that file that had no Bible home at all; the diverging rate/amort are NOT
+    // re-homed here — COMMERCIAL.mortgageRate / .amortizationYears above already
+    // own those and the apps must be corrected to read them.
+    lenderTermYears: 5,                   // balloon term on the bank piece (amort is separate)
+    lenderDscrFloor: 1.20,                // DSCR below this fires the lender red flag
+    collectionLossPct: 0.02,              // collection loss on commercial income
+    propMgmtPctDefault: 0.05,             // property management as % of EGI
+    waltMinYears: 3,                      // weighted-average lease term below this = warning
+    repositionVacancyThreshold: 0.20,     // physical vacancy above this = reposition play
+    topTenantRolloverWarnMonths: 12,      // top tenant rolling within this = warning
+    mgCamRecoveryShare: 0.50,             // modified-gross leases recover ~50% of CAM
+
+    // MVM pads applied to commercial income. NOTE: these are COMMERCIAL's own
+    // pads and happen to equal MHP's (0/20/30); they are deliberately NOT the
+    // residential expensePads (0/15/30). Do not merge the three.
+    mvmPads: {
+      standard: 0.00,
+      mvm20: 0.20,
+      mvm30: 0.30
+    },
+
+    // Reserve assumptions ($/SF/yr unless noted)
+    reserves: {
+      tiLcPsfDefault: 0.75,               // tenant improvements + leasing commissions
+      capexPsfDefault: 0.30,              // capital expenditure reserve
+      medicalTiLcPsf: 1.25,               // medical office carries heavier TI on renewal
+      oldBuildingCapexPsf: 0.50,          // capex reserve for pre-cutoff buildings
+      oldBuildingYearCutoff: 1990         // built before this = "old building"
     },
 
     // Mixed-use blending formula
