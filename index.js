@@ -448,6 +448,17 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     topTenantRolloverWarnMonths: 12,      // top tenant rolling within this = warning
     mgCamRecoveryShare: 0.50,             // modified-gross leases recover ~50% of CAM
 
+    // Seller-finance note that rides behind the bank loan on a commercial
+    // seller-finance offer. Homed 2026-07-18 from the analyzer fleet's
+    // CommercialTab (rei-*-analyzer), which defaulted its seller terms to 6% / 20yr
+    // with NO Bible home — a divergence from the platform's universal 5% / 25yr
+    // seller note (identical to RESIDENTIAL.sellerFinance / STORAGE.sellerFinance /
+    // MHP.sellerFi). Adding a home only; no existing number changes.
+    sellerFinance: {
+      rate: 0.05,                         // 5%
+      amortYears: 25                      // 25yr amortization
+    },
+
     // MVM pads applied to commercial income. NOTE: these are COMMERCIAL's own
     // pads and happen to equal MHP's (0/20/30); they are deliberately NOT the
     // residential expensePads (0/15/30). Do not merge the three.
