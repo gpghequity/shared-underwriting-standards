@@ -646,6 +646,33 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       closingCostEstimatePctSource: 'CLOSING_COSTS.buyerClosingCostsPct'
     },
 
+    // DSCR worksheet floors + the rate stress test used when underwriting a
+    // rent-roll. Homed 2026-07-19 from lender-command/lib/dscr.js, where all of
+    // these were hardcoded in computeWorksheet() with no Bible read at all.
+    //
+    // These are FLOORS, not estimates: a borrower may submit a lower vacancy,
+    // management or R&M assumption, and the worksheet raises it to these values.
+    // That is deliberate — the lender underwrites to its own minimum, not to the
+    // borrower's optimism. Only the floor binds; a HIGHER submitted number is
+    // kept as-is.
+    //
+    // NOTE ON managementPctFloor: this is the same 5% as
+    // COMMERCIAL.propMgmtPctDefault and is intentionally NOT a duplicate value
+    // with a life of its own — it is homed here because it is applied as a
+    // lending floor rather than as a commercial operating default. If Steve
+    // changes one he should consider the other.
+    dscrWorksheet: {
+      vacancyFloorPct: 0.05,        // was `Math.max(0.05, actualVacRate)`
+      managementPctFloor: 0.05,     // was `Math.max(0.05, mgmt_pct/100)`
+      repairsMaintPctFloor: 0.05,   // was `Math.max(0.05, rm_pct/100)`
+      reservesPerUnitFloor: 250,    // was `Math.max(250, reserves_per_unit)`, $/unit/yr
+
+      // Interest rate the loan is re-underwritten at to see whether the deal
+      // still covers debt service if rates move against it. Distinct from
+      // LENDING.stressTests above, which stress the ARV, not the rate.
+      stressTestRatePct: 8.25       // was a bare `const stressRate = 8.25`
+    },
+
     // Required docs
     requiredDocs: [
       'personal_guarantee',
