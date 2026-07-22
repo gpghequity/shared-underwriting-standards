@@ -62,6 +62,21 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
   // estimate ONLY — never the offer or valuation. Residential/rental deals
   // carry no bank fees (bankFees = 0).
   // ============================================================================
+  // Published external reference data (homed 2026-07-22 from gorilla-calc-hub).
+  // NOT Steve's underwriting — loan-program minimums are set by Fannie/FHA/VA/USDA,
+  // state tax rates are published averages, input defaults are form starting values.
+  // Homed so the flat calculators carry NO hardcoded number.
+  REFERENCE: {
+    loanPrograms: {
+      conventional: { min: 5, max: 20, typical: 15 },
+      fha:  { min: 3.5, max: 3.5, typical: 3.5 },
+      va:   { min: 0, max: 0, typical: 0 },
+      usda: { min: 0, max: 0, typical: 0 }
+    },
+    stateTaxRates: { pa: 0.0158, nj: 0.0084, ny: 0.0172, tx: 0.0180, fl: 0.0081 },
+    inputDefaults: { vacancyRatePct: 5, occupancyRatePct: 85, annualAppreciationPct: 3 }
+  },
+
   // Report/valuation confidence display thresholds (homed 2026-07-22 from
   // rei-report-engine). Presentation bands for how confident a generated report /
   // valuation is; homed so nothing is hardcoded.
