@@ -866,6 +866,49 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       },
       source: 'Remodeling Magazine 2024 Cost vs Value + HomeAdvisor + BLS'
     },
+
+    // pic-rehab's photo-estimation cost model (homed 2026-07-22 from rei-pic-rehab).
+    // A distinct per-system model (LOCAL PA template + NATIONAL by asset class + its
+    // own condition-tier %s). Homed so nothing is hardcoded in the app.
+    picRehab: {
+      localCosts: {
+        per_system: {
+          windows: { per_unit: 350, unit_name: 'window' },
+          roof: { per_sqft: 6, unit_name: 'sqft of roof' },
+          kitchen: { per_unit: 6500, unit_name: 'kitchen' },
+          full_bath: { per_unit: 3000, unit_name: 'full bath' },
+          half_bath: { per_unit: 1500, unit_name: 'half bath' },
+          three_quarter_bath: { per_unit: 2000, unit_name: '3/4 bath' },
+          furnace: { per_unit: 3000, unit_name: 'furnace' },
+          plumbing: { per_unit: 7000, unit_name: 'plumbing system' },
+          electrical: { per_unit: 8000, unit_name: 'electrical system' },
+          exterior: { per_unit: 5000, unit_name: 'exterior work' },
+          siding: { per_sqft: 6, unit_name: 'sqft of siding' },
+          appliances: { per_unit: 1300, unit_name: 'appliance set' },
+          porch: { per_unit: 2500, unit_name: 'porch' },
+          basement: { per_sqft: 8, unit_name: 'sqft of basement' },
+          structure: { per_unit: 10, unit_name: 'structural item' },
+          cosmetic: { per_unit: 17, unit_name: 'cosmetic item' }
+        },
+        regional_adjusters: { pa_urban: 1.0, pa_suburban: 0.95, pa_rural: 0.90 }
+      },
+      nationalCosts: {
+        single_family: {
+          windows: { per_unit: 400, note: 'standard replacement window' }, roof: { per_sqft: 8, note: 'asphalt shingles, full replacement' }, kitchen: { per_unit: 8000, note: 'moderate kitchen remodel' }, full_bath: { per_unit: 4000, note: 'moderate bath remodel' }, half_bath: { per_unit: 2000, note: 'moderate half-bath' }, three_quarter_bath: { per_unit: 3000, note: 'moderate 3/4 bath' }, furnace: { per_unit: 4000, note: 'new furnace install' }, plumbing: { per_unit: 9000, note: 'partial replumb' }, electrical: { per_unit: 10000, note: 'electrical panel upgrade' }, exterior: { per_unit: 6000, note: 'exterior paint, minor repairs' }, siding: { per_sqft: 10, note: 'vinyl siding replacement' }, appliances: { per_unit: 2000, note: 'stainless steel appliance set' }, foundation: { per_sqft: 15, note: 'minor foundation work' }, structure: { per_unit: 0, note: 'structural work by quote' }
+        },
+        multifamily: {
+          windows: { per_unit: 350, note: 'standard window per unit' }, roof: { per_sqft: 7, note: 'commercial-grade roof' }, kitchen: { per_unit: 6000, note: 'basic kitchen per unit' }, full_bath: { per_unit: 3500, note: 'basic bath per unit' }, half_bath: { per_unit: 1800, note: 'basic half-bath per unit' }, three_quarter_bath: { per_unit: 2500, note: 'basic 3/4 bath per unit' }, furnace: { per_unit: 3500, note: 'unit-level heating' }, plumbing: { per_unit: 8000, note: 'unit-level plumbing' }, electrical: { per_unit: 9000, note: 'unit-level electrical' }, exterior: { per_unit: 4000, note: 'common area exterior' }, siding: { per_sqft: 8, note: 'common area siding' }, appliances: { per_unit: 1500, note: 'basic appliances per unit' }, foundation: { per_sqft: 12, note: 'foundation inspection/repair' }, structure: { per_unit: 0, note: 'structural work by quote' }
+        },
+        storage: { roof: { per_sqft: 5, note: 'metal roof per unit' }, exterior: { per_sqft: 3, note: 'exterior paint/repair per sqft' }, doors: { per_unit: 500, note: 'roll-up door per unit' }, climate_control: { per_unit: 2000, note: 'AC/heating unit' }, structure: { per_unit: 0, note: 'structural by quote' } },
+        mhp: { roof: { per_unit: 2000, note: 'pad roof repair/replacement' }, exterior: { per_unit: 1500, note: 'exterior siding/paint per lot' }, utilities: { per_unit: 3000, note: 'water/sewer/electric per lot' }, common_area: { per_sqft: 2, note: 'common area maintenance' }, structure: { per_unit: 0, note: 'structural by quote' } },
+        rv_park: { electrical: { per_unit: 1500, note: '50-amp pedestal per pad' }, water: { per_unit: 1000, note: 'water connection per pad' }, sewer: { per_unit: 1200, note: 'sewer connection per pad' }, parking: { per_sqft: 2, note: 'parking area per sqft' }, common_area: { per_sqft: 3, note: 'clubhouse/facilities per sqft' }, structure: { per_unit: 0, note: 'structural by quote' } },
+        ios: { exterior: { per_sqft: 4, note: 'fencing/exterior per sqft' }, lighting: { per_unit: 800, note: 'light post per unit' }, security: { per_sqft: 1, note: 'security fencing per sqft' }, structure: { per_unit: 0, note: 'structural by quote' } },
+        commercial: { roof: { per_sqft: 8, note: 'commercial roof' }, hvac: { per_sqft: 5, note: 'HVAC per sqft' }, electrical: { per_sqft: 3, note: 'electrical per sqft' }, plumbing: { per_sqft: 2, note: 'plumbing per sqft' }, structure: { per_unit: 0, note: 'structural by quote' } }
+      },
+      conditionTiers: {
+        new: { rank: 0, pct_work: 0 }, gold_leaf: { rank: 1, pct_work: 0.02 }, light_rehab: { rank: 2, pct_work: 0.10 }, moderate_rehab: { rank: 3, pct_work: 0.25 }, semi_modern: { rank: 3, pct_work: 0.25 }, heavy_rehab: { rank: 4, pct_work: 0.40 }, old: { rank: 4, pct_work: 0.40 }, studs: { rank: 5, pct_work: 0.75 }, missing: { rank: 5, pct_work: 0.75 }
+      }
+    },
     nationalPsf: {
       move_in: 8,        // move-in ready
       light_rehab: 15,   // light / cosmetic (paint + flooring) — matches cosmetic line base
