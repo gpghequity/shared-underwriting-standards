@@ -815,6 +815,60 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       holding: { amounts: [0, 200, 500, 1000, 1500, 3000, 5000], unit: 'per_month', description: 'Carrying costs' }
     },
 
+    // ── STORAGE rehab systems (homed 2026-07-22 from the analyzer forks) ──
+    // Self-storage rehab $/unit + dropdown ladders. Tier MULTIPLIERS come from REHAB.tiers.
+    // These were app-local orphans (no Bible home); now canonical so nothing is hardcoded.
+    storage: {
+      systems: {
+        roof:           { baseCost: 6,   unit: 'per_sqft',   description: 'Roof / membrane (TPO/EPDM)' },
+        rollupDoors:    { baseCost: 355, unit: 'per_door',   defaultCount: 'totalUnits', description: 'Roll-up doors turnkey' },
+        doorHardware:   { baseCost: 50,  unit: 'per_door',   defaultCount: 'totalUnits', description: 'Spring kit + latch' },
+        pavement:       { baseCost: 5,   unit: 'per_sqft',   description: 'Pavement / drive aisles' },
+        fencing:        { baseCost: 22,  unit: 'per_lf',     description: '6ft chain link installed' },
+        cameras:        { baseCost: 500, unit: 'per_camera', defaultCount: 8, description: 'Cameras / security' },
+        poleLights:     { baseCost: 2000,unit: 'per_pole',   defaultCount: 4, description: 'LED pole / area lighting' },
+        climateHallway: { baseCost: 25,  unit: 'per_sqft',   description: 'Climate hallway interior' },
+        hvac:           { baseCost: 10,  unit: 'per_sqft',   avgUnitSize: 100, description: 'HVAC / climate control' },
+        unitInterior:   { baseCost: 200, unit: 'per_unit',   defaultCount: 'totalUnits', description: 'Unit interior repairs' },
+        exteriorPaint:  { baseCost: 3,   unit: 'per_sqft',   description: 'Exterior paint / cladding' },
+        gate:          { amounts: [0, 4000, 8000, 12000, 20000],        unit: 'dropdown', description: 'Gate / motor' },
+        accessControl: { amounts: [0, 2000, 5000, 10000, 20000],        unit: 'dropdown', description: 'Access control' },
+        office:        { amounts: [0, 2500, 5000, 10000, 15000],        unit: 'dropdown', description: 'Office buildout' },
+        signage:       { amounts: [0, 1500, 3000, 5000, 10000],         unit: 'dropdown', description: 'Signage' },
+        siteWork:      { amounts: [0, 2500, 5000, 10000, 20000, 40000], unit: 'dropdown', description: 'Site work / drainage' }
+      }
+    },
+
+    // ── COMMERCIAL rehab systems (homed 2026-07-22; 2026 national averages) ──
+    commercial: {
+      systems: {
+        interior:   { baseCost: 60, unit: 'per_sqft', description: 'Interior buildout / TI' },
+        roof:       { baseCost: 12, unit: 'per_sqft', description: 'Roof' },
+        hvac:       { baseCost: 18, unit: 'per_sqft', description: 'HVAC' },
+        electrical: { baseCost: 8,  unit: 'per_sqft', description: 'Electrical' },
+        facade:     { baseCost: 15, unit: 'per_sqft', description: 'Facade / exterior' },
+        parking:    { amounts: [0, 5000, 15000, 30000, 60000, 100000], unit: 'dropdown', description: 'Parking lot' },
+        plumbing:   { amounts: [0, 5000, 15000, 30000, 60000, 120000], unit: 'dropdown', description: 'Plumbing' },
+        storefront: { amounts: [0, 5000, 15000, 30000, 60000],         unit: 'dropdown', description: 'Storefront / glazing' },
+        signage:    { amounts: [0, 2500, 7500, 15000, 30000],          unit: 'dropdown', description: 'Signage' },
+        siteWork:   { amounts: [0, 10000, 25000, 50000, 100000],       unit: 'dropdown', description: 'Site work / drainage' }
+      }
+    },
+
+    // ── Geometry / area models (homed 2026-07-22) ──
+    // Construction geometry, not cost tables — but homed so NO app carries a bare
+    // literal. Applied to the per-area rehab formulas (siding, roof, windows, HVAC).
+    geometry: {
+      sidingPerimeterFactor: 4.5,     // sqrt(footprint) x this ~= perimeter
+      sidingWallHeight: 9,            // ft per story
+      sidingGableFactor: 1.10,        // gable / waste uplift
+      roofPitchMultiplier: 1.12,     // footprint x this ~= roof area
+      defaultWindowCount: 20,        // residential windows starting count
+      storageHvacAvgUnitSize: 100,   // sqft per climate unit
+      storageCameraDefaultCount: 8,
+      storagePoleLightDefaultCount: 4
+    },
+
     description: 'All rehab pricing from REI Platform Bible v11.23 Section 5 (source of truth for rehab costs)'
   },
 
