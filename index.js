@@ -62,6 +62,20 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
   // estimate ONLY — never the offer or valuation. Residential/rental deals
   // carry no bank fees (bankFees = 0).
   // ============================================================================
+  // Report/valuation confidence display thresholds (homed 2026-07-22 from
+  // rei-report-engine). Presentation bands for how confident a generated report /
+  // valuation is; homed so nothing is hardcoded.
+  REPORT: {
+    confidenceHigh: 0.85,
+    confidenceMedium: 0.65,
+    confidenceLow: 0.50,
+    valuationGood: 0.80,
+    valuationFair: 0.65,
+    valuationPoor: 0.50,
+    displayCapRateResidential: 0.08,
+    displayCapRateCommercial: 0.08
+  },
+
   CLOSING_COSTS: {
     appraisalFee: 4_000,          // Commercial appraisal (typical $3,000–5,000)
     environmentalFee: 3_500,      // Phase I ESA (typical $2,500–5,000)
@@ -93,6 +107,21 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     ltv: 0.80,                            // 80% LTV
     dscr: 1.25,                           // Min 1.25x
     arvMultiplier: 0.70,                 // MAO / cash-as-is factor (Bible §4)
+
+    // Rental fallback/display defaults (homed 2026-07-22 from rei-auto-offer,
+    // rei-mixed-use, rei-comp-snapshot). The Bible's residential capRate is null
+    // ("uses the DSCR ladder, not a cap rate") — these are the APPS' fallback
+    // estimates for when only rent/limited data is available, and the display cap
+    // shown on operator panels. Homed so nothing is hardcoded; the DSCR ladder is
+    // still the primary residential method.
+    rentalDefaults: {
+      capConservative: 0.10,   // value = NOI / cap (conservative) — auto-offer/mixed-use
+      capStretch: 0.08,        // value = NOI / cap (stretch)
+      grossToNoiEstimate: 0.50,// gross rent -> NOI when only rent is given
+      grm: 10,                 // gross rent multiplier — comp-snapshot
+      displayCapRate: 0.08,    // residential cap shown on comp/report panels
+      rehabDefaultPct: 0.20    // default rehab as % of value — comp-snapshot
+    },
 
     // Cash-on-cash targets used to solve the two return-target offers on the
     // rental tab. Homed 2026-07-16 from rei-fast-calc/src/math/rental.js, where
@@ -443,6 +472,7 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     lenderDscrFloor: 1.20,                // DSCR below this fires the lender red flag
     collectionLossPct: 0.02,              // collection loss on commercial income
     propMgmtPctDefault: 0.05,             // property management as % of EGI
+    genericGrossToNoiEstimate: 0.40,      // generic-commercial gross->NOI when no subclass (homed 2026-07-22 from rei-auto-offer)
     waltMinYears: 3,                      // weighted-average lease term below this = warning
     repositionVacancyThreshold: 0.20,     // physical vacancy above this = reposition play
     topTenantRolloverWarnMonths: 12,      // top tenant rolling within this = warning
@@ -673,6 +703,25 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       stressTestRatePct: 8.25       // was a bare `const stressRate = 8.25`
     },
 
+    // DSCR INTAKE worksheet (homed 2026-07-22 from rei-lending-intake/services/dscr.js).
+    // Distinct from dscrWorksheet above (lender-command's single floors) — this app
+    // floors PER coarse property type. Floors bind upward only; reserves are $/unit
+    // or $/sqft by type. NOTE (for Steve): these coarse-type vacancy floors run LOWER
+    // than the Bible's per-subclass COMMERCIAL vacancy floors — a mapping ruling is
+    // still open, but the values are now homed rather than hardcoded.
+    dscrIntake: {
+      vacancyFloorByType: { multifamily: 0.05, mixed_use: 0.05, retail: 0.05, industrial: 0.05, office: 0.10, default: 0.05 },
+      managementFloorPct: 0.05,   // of total rents
+      maintenanceFloorPct: 0.05,  // of total rents
+      reservesRate: {
+        multifamily: { type: 'per_unit', rate: 250 },
+        mixed_use:   { type: 'per_sqft', rate: 0.20 },
+        retail:      { type: 'per_sqft', rate: 0.15 },
+        industrial:  { type: 'per_sqft', rate: 0.15 },
+        office:      { type: 'per_sqft', rate: 0.20 }
+      }
+    },
+
     // Required docs
     requiredDocs: [
       'personal_guarantee',
@@ -867,6 +916,18 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
       storageHvacAvgUnitSize: 100,   // sqft per climate unit
       storageCameraDefaultCount: 8,
       storagePoleLightDefaultCount: 4
+    },
+
+    // ── Rehab breakdown allocation (homed 2026-07-22 from rei-auto-offer) ──
+    // How a whole-house rehab total SPLITS across categories per condition, for
+    // display. Percentages per tier sum to 1.0; they move no money, only label the
+    // split. Was hardcoded in auto-offer getRehabBreakdown().
+    itemAllocation: {
+      move_in:      { paint_cosmetics: 0.4, flooring_minor: 0.3, fixtures_updates: 0.3 },
+      light_rehab:  { flooring: 0.25, paint_cosmetics: 0.2, kitchen_updates: 0.25, bathroom_fixtures: 0.15, electrical_minor: 0.15 },
+      medium_rehab: { kitchen_remodel: 0.25, roof: 0.15, flooring: 0.2, hvac: 0.1, bathroom_fixtures: 0.15, paint_cosmetics: 0.08, electrical_updates: 0.07 },
+      heavy_rehab:  { kitchen_remodel: 0.2, roof: 0.15, flooring: 0.2, hvac: 0.12, bathroom_fixtures: 0.15, electrical_rewire: 0.08, plumbing: 0.05, paint_cosmetics: 0.05 },
+      studs:        { kitchen_full: 0.15, roof: 0.1, flooring_new: 0.15, hvac: 0.1, electrical_full: 0.1, plumbing_full: 0.1, bathrooms_new: 0.15, drywall_insulation: 0.1, paint_finish: 0.05 }
     },
 
     description: 'All rehab pricing from REI Platform Bible v11.23 Section 5 (source of truth for rehab costs)'
