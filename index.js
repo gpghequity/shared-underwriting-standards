@@ -86,8 +86,11 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     confidenceLow: 0.50,
     valuationGood: 0.80,
     valuationFair: 0.65,
-    valuationPoor: 0.50
-    // No display cap rates — cap rate is never how a deal is valued (Steve).
+    valuationPoor: 0.50,
+    // DISPLAY/DISCUSSION ONLY — a reference cap rate shown on reports; NEVER used
+    // to value a deal (deals use the DSCR ladder).
+    displayCapRateResidential: 0.08,
+    displayCapRateCommercial: 0.08
   },
 
   CLOSING_COSTS: {
@@ -128,7 +131,9 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     rentalDefaults: {
       grossToNoiEstimate: 0.50,// gross rent -> NOI when only rent is given
       grm: 10,                 // gross rent multiplier (comp reference only, not a valuation)
-      rehabDefaultPct: 0.20    // default rehab as % of value — comp-snapshot
+      rehabDefaultPct: 0.20,   // default rehab as % of value — comp-snapshot
+      displayCapRate: 0.08     // DISPLAY/DISCUSSION ONLY — shown as a reference metric,
+                               // NEVER used to value a deal (deals use the DSCR ladder).
     },
 
     // Cash-on-cash targets used to solve the two return-target offers on the
@@ -830,6 +835,37 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     // regionalAdj: national figures are used as-is (1.0). Baby previously multiplied
     // its national column by 1.07 for PA; that bump is now a single Bible knob —
     // set to 1.07 to apply a PA/mid-Atlantic uplift uniformly across every app.
+    // National MARKET benchmark dataset (homed 2026-07-22 from rei-data-enrichment).
+    // Reference market data (Remodeling Magazine / HomeAdvisor medians) with low/
+    // median/high ranges + regional adjustments + per-system ranges — used by the
+    // enrichment API's "national averages" comparison. Distinct from nationalPsf
+    // below, which is STEVE'S authoritative quick ladder. Homed so nothing is hardcoded.
+    nationalBenchmarks: {
+      psfByTier: {
+        move_in:      { low: 3,   median: 5,   high: 10,  note: 'paint + minor cosmetic only' },
+        light_rehab:  { low: 18,  median: 25,  high: 35,  note: 'paint, flooring, minor fixtures' },
+        medium_rehab: { low: 35,  median: 45,  high: 60,  note: 'kitchen OR bath update + cosmetics' },
+        heavy_rehab:  { low: 65,  median: 80,  high: 110, note: 'multiple systems + kitchen + bath' },
+        studs:        { low: 95,  median: 120, high: 175, note: 'down to studs / full gut' }
+      },
+      regionalAdjustments: {
+        mid_atlantic: 1.07, northeast: 1.15, midwest: 0.92, south: 0.85,
+        west: 1.20, pacific: 1.25, national: 1.00
+      },
+      perSystemRanges: {
+        roof_replacement_psf:       { low: 4,   median: 6.5, high: 10,  note: 'tear-off + new shingle' },
+        hvac_replacement_unit:      { low: 6000, median: 9000, high: 14000, note: 'central air + furnace' },
+        electrical_full_rewire_psf: { low: 4,   median: 7,   high: 12,  note: 'full panel + circuits' },
+        plumbing_full_replumb_psf:  { low: 4,   median: 7,   high: 11,  note: 'full repipe' },
+        kitchen_remodel_total:      { low: 18000, median: 30000, high: 60000, note: 'mid-range remodel, ~150 sqft kitchen' },
+        bathroom_remodel_total:     { low: 8000,  median: 14000, high: 28000, note: 'mid-range remodel, full bath' },
+        windows_per_unit:           { low: 450, median: 700, high: 1200, note: 'mid-range double-hung' },
+        exterior_paint_psf:         { low: 1.5, median: 2.5, high: 4,   note: 'whole house exterior' },
+        flooring_psf_lvp:           { low: 4,   median: 6,   high: 9,   note: 'mid-range LVP install' },
+        flooring_psf_hardwood:      { low: 8,   median: 12,  high: 18,  note: 'mid-range hardwood install' }
+      },
+      source: 'Remodeling Magazine 2024 Cost vs Value + HomeAdvisor + BLS'
+    },
     nationalPsf: {
       move_in: 8,        // move-in ready
       light_rehab: 15,   // light / cosmetic (paint + flooring) — matches cosmetic line base
