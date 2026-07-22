@@ -758,6 +758,31 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
   // ============================================================================
 
   REHAB: {
+    // ── QUICK all-in $/SF ladder (Steve's national numbers, homed 2026-07-22) ──
+    // The Bible's per-system model below (tiers × systems) is the LINE-ITEM engine
+    // used by the complex tools (rehab-calc, baby analyzer, the analyzer forks).
+    // This nationalPsf ladder is the FAST path: one blended $/SF applied to whole-
+    // house square footage, keyed to a 5-step condition, for quick tools like
+    // rei-auto-offer (the seller offer path).
+    //
+    // Purpose of homing it: auto-offer and baby's "national averages" column each
+    // carried their OWN hardcoded copy of this ladder and DISAGREED
+    // (auto-offer 5/25/45/75/110, baby 8/22/45/80/130 ×1.07). Now there is ONE
+    // canonical ladder every fast path reads, so they can never drift again.
+    //
+    // regionalAdj: national figures are used as-is (1.0). Baby previously multiplied
+    // its national column by 1.07 for PA; that bump is now a single Bible knob —
+    // set to 1.07 to apply a PA/mid-Atlantic uplift uniformly across every app.
+    nationalPsf: {
+      move_in: 8,        // move-in ready
+      light_rehab: 15,   // light / cosmetic (paint + flooring) — matches cosmetic line base
+      medium_rehab: 25,  // medium (kitchen / bath + cosmetics)
+      heavy_rehab: 45,   // heavy (multiple systems)
+      studs: 110         // down to studs / full gut
+    },
+    nationalPsfRegionalAdj: 1.00,
+    nationalPsfSource: "Steve's national rehab $/SF ladder (2026)",
+
     // Condition tier cost multipliers (applied to base costs per Section 5.2)
     tiers: {
       new: 0.00,               // Like-new, no work
