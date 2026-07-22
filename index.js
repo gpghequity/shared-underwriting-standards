@@ -86,9 +86,8 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     confidenceLow: 0.50,
     valuationGood: 0.80,
     valuationFair: 0.65,
-    valuationPoor: 0.50,
-    displayCapRateResidential: 0.08,
-    displayCapRateCommercial: 0.08
+    valuationPoor: 0.50
+    // No display cap rates — cap rate is never how a deal is valued (Steve).
   },
 
   CLOSING_COSTS: {
@@ -123,18 +122,12 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     dscr: 1.25,                           // Min 1.25x
     arvMultiplier: 0.70,                 // MAO / cash-as-is factor (Bible §4)
 
-    // Rental fallback/display defaults (homed 2026-07-22 from rei-auto-offer,
-    // rei-mixed-use, rei-comp-snapshot). The Bible's residential capRate is null
-    // ("uses the DSCR ladder, not a cap rate") — these are the APPS' fallback
-    // estimates for when only rent/limited data is available, and the display cap
-    // shown on operator panels. Homed so nothing is hardcoded; the DSCR ladder is
-    // still the primary residential method.
+    // Rental defaults. CAP RATE IS NEVER USED to value a deal (Steve, 2026-07-22):
+    // rental/multifamily is valued on the DSCR ladder (RESIDENTIAL.dscr / ltv /
+    // mortgageRate / amortizationYears). These are the remaining non-cap helpers.
     rentalDefaults: {
-      capConservative: 0.10,   // value = NOI / cap (conservative) — auto-offer/mixed-use
-      capStretch: 0.08,        // value = NOI / cap (stretch)
       grossToNoiEstimate: 0.50,// gross rent -> NOI when only rent is given
-      grm: 10,                 // gross rent multiplier — comp-snapshot
-      displayCapRate: 0.08,    // residential cap shown on comp/report panels
+      grm: 10,                 // gross rent multiplier (comp reference only, not a valuation)
       rehabDefaultPct: 0.20    // default rehab as % of value — comp-snapshot
     },
 
