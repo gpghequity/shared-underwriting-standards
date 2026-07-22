@@ -90,7 +90,11 @@ const PLATFORM_UNDERWRITING_STANDARDS = {
     // DISPLAY/DISCUSSION ONLY — a reference cap rate shown on reports; NEVER used
     // to value a deal (deals use the DSCR ladder).
     displayCapRateResidential: 0.08,
-    displayCapRateCommercial: 0.08
+    displayCapRateCommercial: 0.08,
+    // Rent-source divergence: if the spread between the highest and lowest rent
+    // estimate exceeds this fraction, flag a conflict for manual review before
+    // underwriting. Display/QA gate only — does not value anything.
+    rentConflictThreshold: 0.15
   },
 
   CLOSING_COSTS: {
